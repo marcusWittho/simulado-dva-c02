@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cronograma DVA-C02</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --text: #1d1d1f;
+    --muted: #6b6b6b;
+    --border: #e2e2de;
+    --accent: #c2410c;
+    --done: #15803d;
+    --done-bg: #ecfdf3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161617;
+      --card: #1f1f21;
+      --text: #ececec;
+      --muted: #9a9a9e;
+      --border: #333336;
+      --accent: #fb923c;
+      --done: #4ade80;
+      --done-bg: #14271b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161617;
+    --card: #1f1f21;
+    --text: #ececec;
+    --muted: #9a9a9e;
+    --border: #333336;
+    --accent: #fb923c;
+    --done: #4ade80;
+    --done-bg: #14271b;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin: 32px 0 12px; color: var(--accent); }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
+  }
+  .progress-wrap { flex: 1 1 260px; }
+  .progress-label { font-size: 0.9rem; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--done); transition: width .2s; }
+  button {
+    font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+  }
+  button:hover { border-color: var(--accent); }
+
+  .table-wrap {
+    overflow-x: auto; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th, td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg); font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+  tr:last-child td { border-bottom: none; }
+  tr.done td { background: var(--done-bg); }
+  td.check { width: 44px; text-align: center; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--done); cursor: pointer; }
+  .tag {
+    display: inline-block; font-size: 0.78rem; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  .muted { color: var(--muted); }
+
+  ul.checklist { list-style: none; padding: 0; margin: 0; }
+  ul.checklist li {
+    display: flex; gap: 10px; align-items: flex-start; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  ul.checklist li:last-child { border-bottom: none; }
+  ul.checklist label { cursor: pointer; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 760px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 1rem; }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    .toolbar button { display: none; }
+    .table-wrap, .card { border-color: #999; }
+    tr.done td { background: #fff; }
+    h2 { color: #000; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cronograma de estudos: AWS DVA-C02</h1>
+  <p class="sub">10 semanas · 8 a 10 horas por semana · marque o progresso conforme avança.</p>
+
+  <div class="toolbar">
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">0 de 10 semanas concluídas</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <div>
+      <button id="theme-btn" type="button">Alternar tema</button>
+      <button id="reset-btn" type="button">Limpar progresso</button>
+    </div>
+  </div>
+
+  <h2>Semanas</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>✓</th>
+          <th>Semana</th>
+          <th>Domínio (peso)</th>
+          <th>Conteúdo teórico</th>
+          <th>Lab prático</th>
+          <th>Critério de conclusão</th>
+          <th>Custo estimado</th>
+        </tr>
+      </thead>
+      <tbody id="weeks-body"></tbody>
+    </table>
+  </div>
+
+  <h2>Mapeamento com o AWS Developer Learning Plan (Português)</h2>
+  <p class="sub">Plano com 18 cursos e 22h15 de conteúdo. Use-o como base dos labs das semanas 2 a 9.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Semana</th><th>Tema do cronograma</th><th>Cursos do plano</th><th>Cobertura</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>IAM</td><td class="muted">Nenhum módulo dedicado (a Fase 0 só cobre CLI e SDK)</td><td><span class="tag">Lacuna</span> estudar IAM pela documentação oficial</td></tr>
+        <tr><td>2</td><td>S3, KMS, Secrets Manager, Cognito</td><td>Fase 2 "Scaling with Data Storage"; Fase 4 "Securing Data and Secrets"; Fase 4 "User Authentication &amp; Authorization" (1h30)</td><td>Boa</td></tr>
+        <tr><td>3</td><td>Lambda em Java</td><td>"Building Your First Serverless API" (1h15); "Advanced Lambda Patterns" (1h)</td><td>Boa, mas confira a linguagem dos exemplos</td></tr>
+        <tr><td>4</td><td>API Gateway + DynamoDB</td><td>"Building Your First Serverless API"; "Adding Data to Your API" (1h15)</td><td>Boa</td></tr>
+        <tr><td>5</td><td>SQS, SNS</td><td>"Adding Asynchronous Processing" (1h)</td><td>Boa</td></tr>
+        <tr><td>6</td><td>EventBridge, Step Functions</td><td>EventBridge em "Adding Asynchronous Processing"</td><td><span class="tag">Lacuna</span> Step Functions: estudar pela documentação oficial</td></tr>
+        <tr><td>7</td><td>CI/CD</td><td>"CI/CD Automation" (1h15)</td><td>Boa</td></tr>
+        <tr><td>8</td><td>ECS/Fargate, Beanstalk</td><td>"Containerized Applications" (1h); "Building APIs on Amazon EC2" (1h15, opcional)</td><td>Parcial: falta Beanstalk</td></tr>
+        <tr><td>9</td><td>CloudWatch, X-Ray</td><td>"Monitoring and Observability" (1h30)</td><td>Boa</td></tr>
+        <tr><td>10</td><td>Revisão</td><td>"Testing and Error Handling" (1h15); "Integration and Advanced Testing" (1h); "Performance Optimization" (1h30)</td><td>Boa para revisão</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Cursos do plano que não estavam no cronograma original</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Curso</th><th>Duração</th><th>Por que importa para a DVA</th><th>Onde encaixar</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>User Authentication &amp; Authorization</td><td>1h30</td><td>Cognito e autorização: a segurança é 26% da prova</td><td>Semana 2</td></tr>
+        <tr><td>Infrastructure as Code</td><td>1h15</td><td>CloudFormation, CDK, SAM e AppConfig: a base do domínio de deploy</td><td>Semana 8 ou 10</td></tr>
+        <tr><td>Performance Optimization</td><td>1h30</td><td>ElastiCache e redução de custo</td><td>Semana 10</td></tr>
+        <tr><td>Testing and Error Handling</td><td>1h15</td><td>DLQ, tratamento de erro e testes unitários</td><td>Semana 10</td></tr>
+        <tr><td>Integration and Advanced Testing</td><td>1h</td><td>Testes de integração e eventos</td><td>Semana 10</td></tr>
+        <tr><td>Real-time Data Streaming</td><td>1h</td><td>Firehose: peso baixo na DVA</td><td>Opcional, depois da semana 10</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Rotina semanal</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Dia</th><th>Atividade</th><th>Tempo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Segunda</td><td>Teoria (curso em vídeo ou Skill Builder)</td><td>1h30</td></tr>
+        <tr><td>Terça</td><td>Teoria + anotações de conceitos-chave</td><td>1h30</td></tr>
+        <tr><td>Quarta</td><td>Lab prático da semana</td><td>1h30</td></tr>
+        <tr><td>Quinta</td><td>Continuação do lab ou revisão</td><td>1h30</td></tr>
+        <tr><td>Sexta</td><td>Perguntas de simulado do domínio da semana</td><td>1h</td></tr>
+        <tr><td>Sábado</td><td>Lab mais longo ou integração entre serviços</td><td>2h</td></tr>
+        <tr><td>Domingo</td><td>Descanso ou revisão leve</td><td>opcional</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Checklist de encerramento de cada lab</h2>
+  <div class="card">
+    <ul class="checklist" id="lab-checklist">
+      <li><input type="checkbox" id="c1"><label for="c1">Recursos apagados (Lambda, API, tabelas, filas, buckets, stacks do CloudFormation/SAM)</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2">Segredos e chaves KMS criados para o lab removidos</label></li>
+      <li><input type="checkbox" id="c3"><label for="c3">Tags de projeto aplicadas e verificadas no Resource Groups</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4">Gasto do dia conferido no Cost Explorer</label></li>
+      <li><input type="checkbox" id="c5"><label for="c5">Anotações do que deu errado e como resolveu</label></li>
+    </ul>
+  </div>
+
+  <h2>Marcos de controle</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Fim da semana 4</h3>
+      <p class="muted">Se não atingir: repetir os labs de API e DynamoDB antes de avançar.</p>
+    </div>
+    <div class="card">
+      <h3>Fim da semana 7</h3>
+      <p class="muted">Se o tempo estiver curto: pular para simulados de Desenvolvimento.</p>
+    </div>
+    <div class="card">
+      <h3>Simulado com 70%+ (semana 9)</h3>
+      <p class="muted">Agendar a prova para 3 a 4 semanas depois.</p>
+    </div>
+    <div class="card">
+      <h3>Simulado com 80%+ em 2 sessões (semana 10)</h3>
+      <p class="muted">Agendar a prova oficial.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  var STORAGE_KEY = "dva-c02-progresso";
+
+  var weeks = [
+    { n: 1, dom: "Segurança (26%)", teoria: "IAM: users, groups, roles, políticas JSON, STS, MFA", lab: "Criar usuário IAM, role com AssumeRole e testar acesso via CLI", criterio: "Explicar a diferença entre política de identidade e de recurso sem consultar", custo: "US$ 0" },
+    { n: 2, dom: "Segurança (26%)", teoria: "S3: versionamento, políticas de bucket, criptografia, presigned URLs; KMS e Secrets Manager; Cognito (user pools, identity pools) e autorização por token", lab: "Bucket com política restrita, upload com presigned URL, segredo lido por código e login com Cognito protegendo uma rota", criterio: "Acesso negado/permitido conforme o esperado nos testes", custo: "US$ 0 (apagar o segredo ao final)" },
+    { n: 3, dom: "Desenvolvimento (32%)", teoria: "Lambda (memória, timeout, layers, SnapStart), eventos e handler em Java", lab: "Lambda em Java com Maven, testes de cold start e variação de memória", criterio: "Medir duração e custo por invocação em pelo menos 3 configurações", custo: "US$ 0" },
+    { n: 4, dom: "Desenvolvimento (32%)", teoria: "API Gateway (REST vs HTTP), DynamoDB (chaves, GSI, Query vs Scan) e SAM", lab: "API CRUD: API Gateway + Lambda + DynamoDB, deploy com SAM", criterio: "Endpoints funcionando; consulta por GSI implementada", custo: "US$ 0" },
+    { n: 5, dom: "Desenvolvimento (32%)", teoria: "SQS (visibility timeout, DLQ, long polling), SNS e fan-out", lab: "Fila SQS com DLQ e consumidor Lambda em batch; SNS → SQS", criterio: "Mensagem com erro cai na DLQ após N tentativas", custo: "US$ 0" },
+    { n: 6, dom: "Desenvolvimento (32%)", teoria: "EventBridge (regras, padrões de evento), Step Functions (Standard vs Express)", lab: "Regra EventBridge → Lambda; fluxo Step Functions de duas etapas com tratamento de erro", criterio: "Fluxo com retry e catch funcionando", custo: "US$ 0" },
+    { n: 7, dom: "Deploy (24%)", teoria: "CodeBuild, CodePipeline, CodeDeploy, estratégias de deploy (blue/green, canary, rolling)", lab: "Pipeline de deploy de Lambda (ou GitHub Actions) com etapa de teste", criterio: "Deploy automático a partir de um commit", custo: "US$ 0 a 2" },
+    { n: 8, dom: "Deploy (24%)", teoria: "ECS/Fargate, Elastic Beanstalk, containers e variáveis de ambiente", lab: "App Spring Boot em Fargate ou Beanstalk, com config via Parameter Store", criterio: "Aplicação respondendo a health check; recursos apagados ao final", custo: "US$ 1 a 3 (apagar no mesmo dia)" },
+    { n: 9, dom: "Troubleshooting e otimização (18%)", teoria: "CloudWatch (Logs, Metrics, Alarms, Logs Insights), X-Ray, throttling, cache", lab: "Habilitar X-Ray em Lambda; alarme de erro; consulta no Logs Insights", criterio: "Trace visível no X-Ray e alarme disparando em teste", custo: "US$ 0 a 1" },
+    { n: 10, dom: "Revisão geral", teoria: "Revisão de todos os domínios com foco nos erros dos simulados", lab: "Refazer os labs das semanas 1 a 9 sem consultar a documentação", criterio: "Pelo menos 80% nos simulados por 2 sessões seguidas", custo: "US$ 0 a 5 no total" }
+  ];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* armazenamento indisponível: o progresso vale só nesta sessão */ }
+  }
+
+  var state = loadState();
+  var tbody = document.getElementById("weeks-body");
+
+  tbody.innerHTML = weeks.map(function (w) {
+    var checked = state["semana" + w.n] ? " checked" : "";
+    var rowClass = state["semana" + w.n] ? ' class="done"' : "";
+    return "<tr" + rowClass + ' data-week="' + w.n + '">' +
+      '<td class="check"><input type="checkbox" id="semana' + w.n + '"' + checked + "></td>" +
+      "<td><strong>" + w.n + "</strong></td>" +
+      '<td><span class="tag">' + esc(w.dom) + "</span></td>" +
+      "<td>" + esc(w.teoria) + "</td>" +
+      "<td>" + esc(w.lab) + "</td>" +
+      "<td>" + esc(w.criterio) + "</td>" +
+      '<td class="muted">' + esc(w.custo) + "</td>" +
+      "</tr>";
+  }).join("");
+
+  function updateProgress() {
+    var done = weeks.filter(function (w) { return state["semana" + w.n]; }).length;
+    document.getElementById("progress-label").textContent = done + " de " + weeks.length + " semanas concluídas";
+    document.getElementById("progress-fill").style.width = (done / weeks.length * 100) + "%";
+  }
+
+  tbody.addEventListener("change", function (e) {
+    if (e.target.type !== "checkbox") return;
+    var row = e.target.closest("tr");
+    var key = "semana" + row.dataset.week;
+    state[key] = e.target.checked;
+    row.classList.toggle("done", e.target.checked);
+    saveState(state);
+    updateProgress();
+  });
+
+  document.getElementById("lab-checklist").addEventListener("change", function (e) {
+    if (e.target.type === "checkbox") saveState(readLabChecks());
+  });
+
+  function readLabChecks() {
+    var out = state;
+    for (var i = 1; i <= 5; i++) {
+      out["lab" + i] = document.getElementById("c" + i).checked;
+    }
+    return out;
+  }
+
+  function restoreLabChecks() {
+    for (var i = 1; i <= 5; i++) {
+      document.getElementById("c" + i).checked = !!state["lab" + i];
+    }
+  }
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Limpar todo o progresso salvo neste navegador?")) return;
+    state = {};
+    saveState(state);
+    document.querySelectorAll("#weeks-body input, #lab-checklist input").forEach(function (cb) {
+      cb.checked = false;
+    });
+    document.querySelectorAll("#weeks-body tr").forEach(function (tr) {
+      tr.classList.remove("done");
+    });
+    updateProgress();
+  });
+
+  document.getElementById("theme-btn").addEventListener("click", function () {
+    var root = document.documentElement;
+    var isDark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
+  });
+
+  restoreLabChecks();
+  updateProgress();
+})();
+</script>
+</body>
+</html>

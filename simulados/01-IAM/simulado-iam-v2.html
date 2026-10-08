@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulado IAM difícil (DVA-C02)</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1c2330; --muted: #5b6575; --line: #d9dee7;
+  --accent: #2563eb; --ok: #15803d; --okbg: #dcfce7; --bad: #b91c1c; --badbg: #fee2e2;
+  --tag: #e8efff; --tagtext: #1e40af;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1420; --card: #171e2d; --text: #e6eaf2; --muted: #9aa4b5; --line: #2a3447;
+    --accent: #60a5fa; --ok: #4ade80; --okbg: #14321f; --bad: #f87171; --badbg: #3a1717;
+    --tag: #1e2b48; --tagtext: #93c5fd;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1420; --card: #171e2d; --text: #e6eaf2; --muted: #9aa4b5; --line: #2a3447;
+  --accent: #60a5fa; --ok: #4ade80; --okbg: #14321f; --bad: #f87171; --badbg: #3a1717;
+  --tag: #1e2b48; --tagtext: #93c5fd;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; min-height: 100vh; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.5rem; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 12px 0 8px; }
+.sec { margin-top: 28px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.muted { color: var(--muted); }
+.hint { margin: 0 0 12px; font-size: 0.9rem; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.meta { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
+.tag { display: inline-block; font-size: 0.78rem; background: var(--tag); color: var(--tagtext); padding: 3px 10px; border-radius: 999px; }
+.progress { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+.progress > div { height: 100%; background: var(--accent); transition: width .3s; }
+.select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; margin: 6px 0 16px; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; opacity: 1; }
+.opt.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt.good { border-color: var(--ok); background: var(--okbg); }
+.opt.bad { border-color: var(--bad); background: var(--badbg); }
+.mark { width: 1.1em; flex-shrink: 0; }
+.letter { font-weight: 600; flex-shrink: 0; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.feedback { margin-top: 16px; font-weight: 600; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.expl { margin-top: 12px; padding: 14px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.score { font-size: 2.2rem; font-weight: 700; margin: 8px 0; }
+.score span { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.rev { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.rev p { margin: 8px 0; }
+.bad-t { color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"></div>
+</div>
+
+<script id="questions" type="application/json">
+[
+{"t": "Avaliação avançada", "q": "Uma role tem Allow em s3:GetObject. Um usuário assume essa role passando uma session policy que permite somente s3:ListBucket. O usuário consegue ler objetos?", "o": ["Sim, a permissão da role é suficiente", "Não, a sessão tem somente a interseção entre a role e a session policy", "Sim, desde que o usuário também tenha s3:GetObject na própria conta", "Depende da trust policy da role"], "a": [1], "e": "A session policy não concede permissões, ela restringe. A permissão efetiva da sessão é a interseção entre a política da role e a session policy."},
+{"t": "Avaliação avançada", "q": "Uma SCP permite s3:*. O permissions boundary da role permite somente s3:GetObject. A política de identidade da role permite somente s3:PutObject. A role tenta executar PutObject. Qual é o resultado?", "o": ["Permitido", "Negado", "Permitido, pois a política de identidade tem prioridade sobre o boundary", "Permitido, pois a SCP é um Allow"], "a": [1], "e": "A permissão efetiva é a interseção entre SCP, boundary e política de identidade. PutObject não está no boundary, então é negado."},
+{"t": "Avaliação avançada", "q": "Um principal precisa acessar um bucket de outra conta. Quais elementos são necessários para permitir o acesso? Escolha 2.", "o": ["Política baseada em recurso no bucket que permita o principal externo", "Política de identidade no principal que permita a ação", "Trust policy no bucket que permita sts:AssumeRole", "Compartilhar as credenciais do usuário root da conta do bucket"], "a": [0, 1], "e": "Em acesso entre contas, a política de recurso na conta do bucket e a política de identidade na conta do principal precisam permitir a ação. Trust policies pertencem a roles, não a buckets."},
+{"t": "Avaliação avançada", "q": "Uma identidade da conta A acessa um recurso da conta B. A resource policy da conta B permite a ação. Uma SCP da conta A nega essa ação. Qual é o resultado?", "o": ["Permitido, a resource policy prevalece sobre a SCP", "Negado, a SCP da conta A ainda se aplica à identidade", "Permitido se a identidade tiver Allow em sua política", "Depende da configuração da conta B"], "a": [1], "e": "SCPs limitam as identidades das contas às quais estão anexadas, independentemente da política do recurso de outra conta."},
+{"t": "Avaliação avançada", "q": "Um bucket tem resource policy com Allow para um usuário da mesma conta. O usuário não tem nenhuma política de identidade. Qual é o resultado?", "o": ["Permitido, porque a política de recurso concede acesso na mesma conta", "Negado, porque é necessária uma política de identidade", "Negado, porque usuários não podem receber políticas de recurso", "Permitido apenas para leitura"], "a": [0], "e": "Dentro da mesma conta, uma política de recurso que concede acesso a um principal é suficiente para serviços como o S3."},
+{"t": "Roles e encadeamento", "q": "Um usuário assume a role A, que em seguida assume a role B (encadeamento de roles). Qual é a duração máxima da sessão de B?", "o": ["15 minutos", "1 hora", "12 horas", "Igual ao MaxSessionDuration configurado em B"], "a": [1], "e": "Sessões de roles encadeadas são limitadas a 1 hora, independentemente do MaxSessionDuration da role."},
+{"t": "Roles e encadeamento", "q": "Um fornecedor externo precisa assumir uma role da sua conta. Qual proteção evita o ataque de confused deputy na trust policy?", "o": ["Condition sts:ExternalId na trust policy", "Condition aws:SourceIp na trust policy", "Permissions boundary na role", "SCP negando sts:AssumeRole"], "a": [0], "e": "sts:ExternalId é um segredo compartilhado com o fornecedor. Ele impede que outro cliente do fornecedor use sua role, mesmo que conheça o ARN."},
+{"t": "Roles e encadeamento", "q": "Você quer que a identidade original apareça no CloudTrail mesmo após o usuário assumir uma role, inclusive em encadeamento. Qual parâmetro usar?", "o": ["sts:SourceIdentity", "sts:RoleSessionName", "sts:ExternalId", "sts:TagSession"], "a": [0], "e": "SourceIdentity é definido no AssumeRole e é preservado nas sessões encadeadas, o que mantém a rastreabilidade. RoleSessionName é apenas um nome livre de sessão."},
+{"t": "Roles e encadeamento", "q": "Um usuário tem iam:PassRole sobre a role R, com a condition iam:PassedToService igual a lambda.amazonaws.com. Ele tenta associar R a uma instância EC2. Qual é o resultado?", "o": ["Permitido, PassRole sempre permite associar roles", "Negado, a condição limita o serviço de destino a Lambda", "Permitido se a trust policy da role aceitar EC2", "Depende da região da instância"], "a": [1], "e": "A condition iam:PassedToService restringe os serviços que podem receber a role. Como o destino é EC2, a ação é negada."},
+{"t": "Roles e encadeamento", "q": "Quais afirmações sobre sessões de AssumeRole são verdadeiras? Escolha 2.", "o": ["É possível revogar sessões ativas com uma política Deny condicionada a aws:TokenIssueTime", "A duração da sessão é limitada pelo MaxSessionDuration da role", "GetSessionToken pode ser usado para assumir uma role", "Session tags não podem ser usadas em role chaining"], "a": [0, 1], "e": "Negar sessões anteriores a um horário com aws:TokenIssueTime invalida credenciais já emitidas. A duração máxima é controlada pelo MaxSessionDuration. GetSessionToken não assume roles."},
+{"t": "Roles e encadeamento", "q": "Uma role tem MaxSessionDuration de 12 horas. Um AssumeRole com DurationSeconds igual a 43200 (12 horas) é válido?", "o": ["Sim, dentro do MaxSessionDuration configurado na role", "Não, o máximo do AssumeRole é 1 hora", "Não, apenas GetSessionToken aceita mais de 1 hora", "Sim, mas exige MFA em todas as chamadas"], "a": [0], "e": "A duração solicitada deve estar entre 15 minutos e o MaxSessionDuration da role, que pode ser de até 12 horas (fora do encadeamento)."},
+{"t": "Roles e encadeamento", "q": "Um usuário IAM precisa chamar APIs protegidas por MFA usando credenciais temporárias pela CLI. Qual chamada usar?", "o": ["sts:GetSessionToken com --serial-number e --token-code", "iam:CreateAccessKey", "sts:AssumeRoleWithWebIdentity", "iam:CreateLoginProfile"], "a": [0], "e": "GetSessionToken, quando chamado com MFA, retorna credenciais temporárias que atendem às condições de MFA."},
+{"t": "Roles e encadeamento", "q": "Quais são afirmações verdadeiras sobre iam:PassRole? Escolha 2.", "o": ["Concede permissão para associar uma role a um serviço", "Não é necessário para criar roles", "Pode ser restringido pela condição iam:PassedToService", "Permite que o usuário assuma a role para si mesmo"], "a": [0, 2], "e": "PassRole controla a associação de roles a serviços e pode ser limitado por iam:PassedToService. Não assume a role, e criar roles não exige PassRole."},
+{"t": "Condições avançadas", "q": "Você quer permitir ec2:StartInstances somente em instâncias com a tag env igual a dev, usando ABAC. Qual condition key usar?", "o": ["aws:ResourceTag/env igual a dev", "aws:PrincipalTag/env igual a dev", "aws:RequestTag/env igual a dev", "ec2:Owner igual a dev"], "a": [0], "e": "aws:ResourceTag verifica as tags do recurso alvo. PrincipalTag verifica o usuário, e RequestTag verifica tags enviadas na requisição."},
+{"t": "Condições avançadas", "q": "Permita que um usuário crie recursos somente se a tag project informada na requisição for igual à tag project do próprio usuário. Qual condição usar?", "o": ["StringEquals comparando aws:RequestTag/project com aws:PrincipalTag/project", "Condition aws:SourceIp", "Condition aws:ResourceTag/project com valor fixo", "Esse caso não é possível com ABAC"], "a": [0], "e": "Comparar duas chaves de contexto (RequestTag e PrincipalTag) é uma forma de ABAC que não depende de valores fixos na política."},
+{"t": "Condições avançadas", "q": "Uma política deve permitir acesso apenas a principais que pertencem à sua organização. Qual condition key usar?", "o": ["aws:PrincipalOrgID", "aws:SourceOrgID", "aws:OrgId", "aws:PrincipalAccount"], "a": [0], "e": "aws:PrincipalOrgID identifica a organização do principal que faz a requisição. aws:SourceOrgID é usada para principais de serviço."},
+{"t": "Condições avançadas", "q": "Ao permitir que o serviço SNS publique em uma fila SQS, qual condition limita a permissão à origem específica (proteção contra confused deputy)?", "o": ["aws:SourceArn", "aws:PrincipalArn", "aws:ResourceArn", "aws:SourceIdentity"], "a": [0], "e": "aws:SourceArn restringe o recurso de origem que chama o serviço, impedindo que outro tópico use a mesma permissão."},
+{"t": "Condições avançadas", "q": "Quais condições ajudam a mitigar o confused deputy? Escolha 3.", "o": ["aws:SourceAccount", "aws:SourceArn", "aws:PrincipalArn", "sts:ExternalId"], "a": [0, 1, 3], "e": "aws:SourceAccount e aws:SourceArn limitam a origem do serviço, e sts:ExternalId protege o AssumeRole de terceiros. aws:PrincipalArn não identifica a origem de um serviço."},
+{"t": "Condições avançadas", "q": "Uma política deve permitir a ação somente se todos os valores de tags da requisição estiverem em uma lista permitida. Qual operador usar?", "o": ["ForAllValues:StringEquals", "ForAnyValue:StringEquals", "StringEquals", "StringLike"], "a": [0], "e": "ForAllValues exige que todos os valores da requisição estejam na lista. ForAnyValue basta que um deles esteja. Atenção: ForAllValues retorna verdadeiro para um conjunto vazio."},
+{"t": "Condições avançadas", "q": "Você quer permitir acesso a um bucket somente quando a requisição chegar por um VPC endpoint específico. Qual condition key usar?", "o": ["aws:SourceVpce", "aws:SourceVpc", "aws:VpcId", "aws:SecureTransport"], "a": [0], "e": "aws:SourceVpce identifica o VPC endpoint específico. aws:SourceVpc identifica apenas a VPC."},
+{"t": "Condições avançadas", "q": "Uma política deve impedir que usuários removam a tag env dos recursos. Qual condition key usar?", "o": ["aws:TagKeys", "aws:RequestTag", "aws:ResourceTag", "aws:PrincipalTag"], "a": [0], "e": "aws:TagKeys contém as chaves de tag presentes na requisição, o que permite controlar quais chaves podem ser alteradas ou removidas."},
+{"t": "Condições avançadas", "q": "Você quer que o Amazon S3 seja acessado somente quando a chamada for feita pelo Amazon Athena em nome do usuário. Qual condition key usar?", "o": ["aws:CalledVia", "aws:ViaAWSService", "aws:SourceAccount", "aws:PrincipalServiceName"], "a": [0], "e": "aws:CalledVia contém os serviços que fizeram a chamada em nome do principal, em ordem. aws:ViaAWSService apenas indica se houve algum serviço no caminho."},
+{"t": "Federação e OIDC", "q": "Uma role deve poder ser assumida somente pelo GitHub Actions do repositório da sua empresa, na branch main. Onde essa restrição deve ficar?", "o": ["Condition StringEquals na chave token.actions.githubusercontent.com:sub da trust policy", "Condition aws:SourceIp na política de identidade do pipeline", "Permissions boundary na role", "Política de identidade com Resource *"], "a": [0], "e": "A chave sub do token OIDC identifica o repositório e a branch. A trust policy deve validar essa chave para impedir que outros repositórios assumam a role."},
+{"t": "Federação e OIDC", "q": "No IAM Identity Center, como os permission sets chegam às contas de destino?", "o": ["Como roles provisionadas automaticamente nas contas de destino (AWSReservedSSO)", "Como usuários IAM criados em cada conta", "Como access keys de longo prazo", "Como políticas inline no usuário root"], "a": [0], "e": "Ao atribuir um permission set a uma conta, o Identity Center cria uma role correspondente na conta, que é assumida pelos usuários autenticados."},
+{"t": "Federação e OIDC", "q": "Para permitir que um provedor SAML corporativo assuma uma role via AssumeRoleWithSAML, qual é a configuração correta da trust policy?", "o": ["Principal Federated com o ARN do provedor SAML e condition SAML:aud", "Principal AWS com o ID da conta", "Condition aws:SourceIp", "Principal * sem condições"], "a": [0], "e": "Principal Federated aponta para o provedor SAML cadastrado. A condition SAML:aud garante que o token é destinado ao endpoint da AWS."},
+{"t": "Federação e OIDC", "q": "Uma role usada por usuários federados do Cognito deve permitir que cada usuário acesse somente seu próprio prefixo no S3. Como fazer isso?", "o": ["Usar a variável de política cognito-identity.amazonaws.com:sub no ARN do recurso", "Criar um permissions boundary para cada usuário final", "Criar uma access key para cada usuário final", "Criar uma SCP com condição por identidade federada"], "a": [0], "e": "Variáveis de política substituem o valor pelo identificador do usuário autenticado, o que permite isolar os prefixos em uma única política."},
+{"t": "Federação e OIDC", "q": "Quais condições em uma trust policy OIDC restringem quem pode assumir a role? Escolha 2.", "o": ["Condition sobre a chave sub do token", "Condition sobre a chave aud do token", "Principal com * e sem condição", "Condition aws:SourceIp"], "a": [0, 1], "e": "sub identifica o assunto do token, como repositório e branch. aud identifica o público-alvo do token. Um Principal * sem condições libera qualquer emissor."},
+{"t": "Federação e OIDC", "q": "Sobre o IAM Identity Center, quais afirmações são verdadeiras? Escolha 2.", "o": ["Pode integrar diretórios externos, como Active Directory ou provedores SAML", "Permission sets são usados para criar as roles nas contas de destino", "Cria access keys de longo prazo para cada usuário", "Exige a criação de usuários IAM em cada conta membro"], "a": [0, 1], "e": "O Identity Center integra diretórios externos e usa permission sets para provisionar roles nas contas. Não cria access keys e não exige usuários IAM por conta."},
+{"t": "KMS e IAM", "q": "Um usuário tem kms:Decrypt na política de identidade, mas a key policy da CMK da mesma conta não permite o acesso e não delega ao IAM. Qual é o resultado?", "o": ["Permitido, a política de identidade basta", "Negado, a key policy precisa permitir o acesso, diretamente ou por delegação à conta", "Permitido somente se a chave for AWS managed", "Permitido, mas somente para leitura de metadados"], "a": [1], "e": "A key policy é a política primária da chave. Sem delegação à conta raiz, as políticas IAM sozinhas não concedem acesso à CMK."},
+{"t": "KMS e IAM", "q": "Um principal de outra conta precisa ler um objeto criptografado com SSE-KMS usando uma CMK da conta do bucket. O que é necessário?", "o": ["Key policy permitindo o principal externo e política de identidade dele permitindo kms:Decrypt", "Somente a bucket policy", "Somente a SCP da conta externa", "Somente a política de identidade do principal externo"], "a": [0], "e": "Em acesso entre contas, a key policy da conta da chave precisa autorizar o principal externo, e a política de identidade dele também precisa permitir kms:Decrypt."},
+{"t": "KMS e IAM", "q": "Sobre key policies de chaves KMS, quais afirmações são verdadeiras? Escolha 2.", "o": ["Toda chave KMS tem uma key policy", "Pode delegar permissões à conta raiz para que políticas IAM sejam aceitas", "Não se aplica a chaves gerenciadas pela AWS", "Substitui qualquer política de identidade"], "a": [0, 1], "e": "Toda chave tem uma key policy, e a delegação à conta raiz permite que políticas IAM concedam acesso. Chaves AWS managed também têm key policy, e a key policy não substitui políticas de identidade."},
+{"t": "KMS e IAM", "q": "Um usuário tem s3:GetObject sobre um bucket que usa SSE-KMS, mas não tem kms:Decrypt na chave. Qual é o resultado ao ler um objeto?", "o": ["Acesso negado ao objeto, pois kms:Decrypt também é necessário", "Acesso permitido, pois s3:GetObject basta", "Acesso permitido se a bucket policy permitir", "Acesso permitido somente para o usuário root"], "a": [0], "e": "Objetos criptografados com SSE-KMS exigem permissão de descriptografia na chave, além da permissão no S3."},
+{"t": "Organizations avançado", "q": "Uma SCP nega iam:CreateUser em todas as contas. A conta de gerenciamento tem AdministratorAccess. Ela pode criar usuários IAM?", "o": ["Sim, a conta de gerenciamento não é afetada pelas SCPs", "Não, as SCPs também afetam a conta de gerenciamento", "Sim, mas somente se usar o usuário root", "Não, mas é possível por meio de uma role"], "a": [0], "e": "SCPs não restringem a conta de gerenciamento. Por isso, políticas de controle devem ser complementadas com outros controles nessa conta."},
+{"t": "Organizations avançado", "q": "Resource control policies (RCPs) limitam o quê?", "o": ["Permissões sobre os recursos das contas, independentemente da identidade que acessa", "Permissões das identidades das contas membros", "Regiões permitidas globalmente", "Trust policies de roles"], "a": [0], "e": "RCPs definem o máximo de permissões aplicáveis aos recursos, inclusive para acessos externos à organização."},
+{"t": "Organizations avançado", "q": "Uma SCP com Allow para ec2:* está anexada a uma OU. A identidade de uma conta membro não tem nenhuma política de identidade que permita ec2. A ação é permitida?", "o": ["Sim, a SCP concede a permissão", "Não, SCPs não concedem permissão; a identidade ainda precisa de Allow", "Sim, em todas as contas membros", "Depende de tags nos recursos"], "a": [1], "e": "SCPs apenas definem o limite máximo. Sem Allow na identidade, a ação é negada."},
+{"t": "Organizations avançado", "q": "Sobre a avaliação de SCPs, quais afirmações são verdadeiras? Escolha 2.", "o": ["A ação precisa ser permitida pelas SCPs de todos os níveis da hierarquia até a conta", "Um Deny em uma SCP de qualquer nível prevalece", "Um Allow na conta pode sobrepor a negação de uma SCP de OU", "SCPs concedem permissões às identidades das contas"], "a": [0, 1], "e": "A ação precisa ser permitida em todo o caminho da hierarquia, e um Deny em qualquer nível bloqueia a ação. Allow local não sobrepõe SCPs, e SCPs não concedem permissões."},
+{"t": "Organizations avançado", "q": "Uma conta membro é removida da organização. Quais SCPs da organização anterior continuam se aplicando a ela?", "o": ["Nenhuma", "Todas as SCPs da raiz", "Apenas a SCP FullAWSAccess", "Apenas as SCPs da OU anterior"], "a": [0], "e": "Ao sair, a conta deixa de ser membro e perde todas as SCPs da organização."},
+{"t": "Troubleshooting", "q": "Você precisa descobrir qual política está negando uma ação antes de alterar qualquer permissão. Qual ferramenta usar?", "o": ["IAM policy simulator", "Credential report", "IAM Access Analyzer", "Access Advisor"], "a": [0], "e": "O policy simulator avalia as políticas aplicáveis à identidade para uma ação específica, sem executar a ação real."},
+{"t": "Troubleshooting", "q": "Uma role é assumida com sucesso e a política da role permite s3:GetObject, mas as leituras falham com AccessDenied. A bucket policy tem um Deny condicionado a aws:SourceVpce diferente do VPC endpoint usado. Qual é a causa?", "o": ["Deny explícito na bucket policy condicionado ao VPC endpoint", "Falta de access key", "Trust policy da role incorreta", "Política antiga em cache"], "a": [0], "e": "Um Deny explícito em qualquer política aplicável prevalece, mesmo que a identidade tenha Allow."},
+{"t": "Troubleshooting", "q": "Uma política tem um Allow com a condition DateGreaterThan já vencida. Qual é o efeito para uma requisição feita hoje?", "o": ["Negado, pois nenhum Allow aplicável está válido", "Permitido com aviso no CloudTrail", "Permitido, pois a condição expirada é ignorada", "Erro de sintaxe na avaliação"], "a": [0], "e": "Se a condição é falsa, o Allow não se aplica. Sem outro Allow, a requisição é negada por padrão."},
+{"t": "Troubleshooting", "q": "Uma política usa a ação s3:getobject em minúsculas. Qual é o resultado?", "o": ["Funciona, nomes de ação não diferenciam maiúsculas de minúsculas", "Não funciona, a política é inválida", "Funciona apenas no console", "Gera erro de sintaxe durante a avaliação"], "a": [0], "e": "Nomes de ação IAM não diferenciam maiúsculas de minúsculas. Já os valores de condition keys e os ARNs dos recursos podem diferenciar."},
+{"t": "Troubleshooting", "q": "Uma função falha ao executar ec2:RunInstances, mesmo com permissão para a AMI. A política permite a instância, mas não a subnet. Qual é a causa?", "o": ["Recursos adicionais, como subnet e security group, também precisam de permissão na ação", "A AMI precisa de uma access key própria", "Instâncias não aceitam tags na criação", "Falta de quota de instâncias"], "a": [0], "e": "RunInstances exige permissão sobre todos os recursos envolvidos, como subnet, security group, volumes e a própria instância."},
+{"t": "Troubleshooting", "q": "Uma aplicação com credenciais temporárias corretas passa a receber 'The security token included in the request is expired'. Qual é a causa mais provável?", "o": ["As credenciais temporárias expiraram; é necessário renovar a sessão", "A trust policy negou a operação", "Falta a permissão s3:GetObject", "A conta foi suspensa"], "a": [0], "e": "Credenciais temporárias têm validade limitada. A aplicação deve renovar a sessão, por exemplo, reassumindo a role."},
+{"t": "Políticas avançadas", "q": "Uma política tem Effect Deny, Action s3:* e NotResource arn:aws:s3:::dados/publico/*. O que ela faz?", "o": ["Nega s3:* em todos os recursos, exceto os do prefixo publico/", "Nega s3:* apenas no prefixo publico/", "Permite s3:* no prefixo publico/", "Nega s3:* em todos os recursos"], "a": [0], "e": "NotResource aplica o statement a todos os recursos fora da lista. Por isso, o prefixo publico/ fica de fora do Deny."},
+{"t": "Políticas avançadas", "q": "Uma bucket policy tem Principal com * e a condition aws:PrincipalOrgID igual ao ID da sua organização. O que ela permite?", "o": ["Acesso a principais da organização indicada; acesso anônimo fica excluído", "Acesso público anônimo", "Nada, pois essa combinação é inválida", "Acesso somente ao usuário root da organização"], "a": [0], "e": "A condition restringe o acesso aos principais da organização, mesmo com Principal *. Requisições anônimas não têm PrincipalOrgID e são negadas."},
+{"t": "Políticas avançadas", "q": "Um bucket tem um Deny com NotPrincipal igual ao ARN da role Admin. O que o statement faz?", "o": ["Nega a todos os principais, exceto a role Admin", "Nega somente a role Admin", "Permite a role Admin", "É um erro, pois NotPrincipal não existe"], "a": [0], "e": "NotPrincipal aplica o Deny a todos os principais que não estão na lista. Esse formato é perigoso se a lista estiver incompleta."},
+{"t": "Políticas avançadas", "q": "Quais afirmações sobre o elemento Resource são verdadeiras? Escolha 3.", "o": ["Aceita wildcards em nomes de recurso, como arn:aws:s3:::dados-*", "Políticas de identidade usam Principal para definir quem é afetado", "Aceita variáveis de política, como ${aws:username}", "Em políticas de identidade, precisa de Resource ou NotResource"], "a": [0, 2, 3], "e": "Wildcards e variáveis de política são aceitos em Resource, e políticas de identidade precisam de Resource ou NotResource. Principal é usado em políticas de recurso, não em políticas de identidade."},
+{"t": "Políticas avançadas", "q": "Uma política inline de usuário excede o limite de tamanho. Qual solução é adequada?", "o": ["Converter para uma política gerenciada, que aceita tamanho maior", "Dividir a política entre vários usuários", "Usar Deny para compactar a política", "Pedir ao suporte para remover o limite de políticas inline"], "a": [0], "e": "Políticas gerenciadas têm limite de tamanho maior que as inline. Dividir entre usuários ou usar Deny não resolve o problema."},
+{"t": "Políticas avançadas", "q": "Uma trust policy de role tem Principal AWS igual a arn:aws:iam::111111111111:root. Quem pode assumir a role?", "o": ["Qualquer principal da conta 111111111111 com sts:AssumeRole na própria política de identidade", "Somente o usuário root da conta 111111111111", "Somente roles da conta 111111111111", "Ninguém, porque o root não pode ser principal"], "a": [0], "e": "O ARN da conta raiz na trust policy confia na conta inteira. Cada principal da conta ainda precisa de sts:AssumeRole em sua política de identidade."},
+{"t": "Políticas avançadas", "q": "Uma política tem Resource arn:aws:s3:::dados/${aws:username}/*. Qual é o efeito?", "o": ["Cada usuário acessa somente o prefixo com o próprio nome", "Acesso ao bucket inteiro para todos", "Erro, variáveis não são suportadas em Resource", "Acesso somente para o usuário root"], "a": [0], "e": "${aws:username} é substituído pelo nome do usuário autenticado, o que cria um isolamento por prefixo com uma única política."}
+]
+</script>
+
+<script>
+const Q = JSON.parse(document.getElementById('questions').textContent);
+const app = document.getElementById('app');
+const LETTERS = 'ABCDE';
+let S = null;
+let timer = null;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shuffle = arr => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+const sameAnswer = (sel, correct) => [...sel].sort().join() === [...correct].sort().join();
+
+function startQuiz(topic) {
+  S = { topic, list: shuffle(Q.filter(q => topic === 'all' || q.t === topic)), i: 0, score: 0, wrong: [], sel: new Set(), confirmed: false, lastOk: false, t0: Date.now() };
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const el = document.getElementById('timer');
+    if (S && el) el.textContent = fmt(Math.floor((Date.now() - S.t0) / 1000));
+  }, 1000);
+  render();
+}
+
+function pick(i) {
+  if (S.confirmed) return;
+  if (S.list[S.i].a.length > 1) {
+    S.sel.has(i) ? S.sel.delete(i) : S.sel.add(i);
+  } else {
+    S.sel = new Set([i]);
+  }
+  render();
+}
+
+function confirm() {
+  if (!S.sel.size || S.confirmed) return;
+  const q = S.list[S.i];
+  S.lastOk = sameAnswer(S.sel, q.a);
+  if (S.lastOk) S.score++;
+  else S.wrong.push({ q, chosen: [...S.sel].sort() });
+  S.confirmed = true;
+  render();
+}
+
+function next() {
+  S.i++;
+  S.sel = new Set();
+  S.confirmed = false;
+  render();
+}
+
+function render() {
+  if (!S) return renderStart();
+  if (S.i >= S.list.length) return renderResult();
+  renderQuestion();
+}
+
+function renderStart() {
+  clearInterval(timer);
+  const topics = [...new Set(Q.map(q => q.t))].sort();
+  app.innerHTML = `
+    <div class="card">
+      <h1>Simulado IAM difícil (DVA-C02)</h1>
+      <p class="muted">${Q.length} questões de escolha única e múltipla resposta, com explicação após cada resposta. Não é a escala oficial da AWS: use para identificar lacunas de estudo.</p>
+      <label class="muted" for="topic">Tema</label>
+      <select id="topic" class="select">
+        <option value="all">Todos os temas (${Q.length})</option>
+        ${topics.map(t => `<option value="${esc(t)}">${esc(t)} (${Q.filter(q => q.t === t).length})</option>`).join('')}
+      </select>
+      <div class="actions"><button class="btn primary" data-action="start">Começar</button></div>
+    </div>`;
+}
+
+function renderQuestion() {
+  const q = S.list[S.i];
+  const n = S.list.length;
+  const multi = q.a.length > 1;
+  const opts = q.o.map((txt, i) => {
+    const picked = S.sel.has(i);
+    let cls = 'opt' + (picked ? ' sel' : '');
+    if (S.confirmed) {
+      if (q.a.includes(i)) cls += ' good';
+      else if (picked) cls += ' bad';
+    }
+    const mark = multi ? (picked ? '☑' : '☐') : (picked ? '◉' : '○');
+    return `<button class="${cls}" data-action="pick" data-i="${i}" ${S.confirmed ? 'disabled' : ''}>
+      <span class="mark">${mark}</span><span class="letter">${LETTERS[i]}</span><span>${esc(txt)}</span>
+    </button>`;
+  }).join('');
+
+  let footer;
+  if (!S.confirmed) {
+    footer = `<div class="actions"><button class="btn primary" data-action="confirm" ${S.sel.size ? '' : 'disabled'}>Confirmar resposta</button></div>`;
+  } else {
+    footer = `
+      <div class="feedback ${S.lastOk ? 'ok' : 'bad'}">${S.lastOk ? 'Resposta correta!' : 'Resposta incorreta. Correta: ' + q.a.map(i => LETTERS[i]).join(', ')}</div>
+      <div class="expl"><strong>Explicação:</strong> ${esc(q.e)}</div>
+      <div class="actions"><button class="btn primary" data-action="next">${S.i + 1 < n ? 'Próxima' : 'Ver resultado'}</button></div>`;
+  }
+
+  app.innerHTML = `
+    <div class="progress"><div style="width:${(S.i / n) * 100}%"></div></div>
+    <div class="card">
+      <div class="row meta"><span>Questão ${S.i + 1} de ${n}</span><span id="timer">${fmt(Math.floor((Date.now() - S.t0) / 1000))}</span></div>
+      <span class="tag">${esc(q.t)}</span>
+      <h2>${esc(q.q)}</h2>
+      <p class="muted hint">${multi ? `Escolha ${q.a.length} alternativas.` : 'Escolha uma alternativa.'}</p>
+      <div class="opts">${opts}</div>
+      ${footer}
+    </div>`;
+}
+
+function renderResult() {
+  clearInterval(timer);
+  const n = S.list.length;
+  const pct = Math.round((S.score / n) * 100);
+  const secs = Math.floor((Date.now() - S.t0) / 1000);
+  const topicLabel = S.topic === 'all' ? 'todos os temas' : S.topic;
+  const review = S.wrong.length
+    ? S.wrong.map(w => `
+      <div class="rev">
+        <span class="tag">${esc(w.q.t)}</span>
+        <p><strong>${esc(w.q.q)}</strong></p>
+        <p class="bad-t">Sua resposta: ${w.chosen.map(i => LETTERS[i]).join(', ')} · Correta: ${w.q.a.map(i => LETTERS[i]).join(', ')}</p>
+        <p class="muted">${esc(w.q.e)}</p>
+      </div>`).join('')
+    : '<p>Nenhum erro. Excelente!</p>';
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>Resultado</h1>
+      <div class="score">${S.score}/${n} <span>(${pct}%)</span></div>
+      <p class="muted">Tempo: ${fmt(secs)}. Use o resultado para identificar os temas que precisam de revisão.</p>
+      <div class="actions">
+        <button class="btn primary" data-action="restart">Refazer (${esc(topicLabel)})</button>
+        <button class="btn" data-action="home">Trocar tema</button>
+      </div>
+    </div>
+    <h2 class="sec">Revisão dos erros (${S.wrong.length})</h2>
+    ${review}`;
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]');
+  if (!b || b.disabled) return;
+  const action = b.dataset.action;
+  if (action === 'start') startQuiz(document.getElementById('topic').value);
+  else if (action === 'pick') pick(Number(b.dataset.i));
+  else if (action === 'confirm') confirm();
+  else if (action === 'next') next();
+  else if (action === 'restart') startQuiz(S.topic);
+  else if (action === 'home') { S = null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>

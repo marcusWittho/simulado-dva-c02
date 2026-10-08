@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulado IAM (DVA-C02)</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1c2330; --muted: #5b6575; --line: #d9dee7;
+  --accent: #2563eb; --ok: #15803d; --okbg: #dcfce7; --bad: #b91c1c; --badbg: #fee2e2;
+  --tag: #e8efff; --tagtext: #1e40af;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1420; --card: #171e2d; --text: #e6eaf2; --muted: #9aa4b5; --line: #2a3447;
+    --accent: #60a5fa; --ok: #4ade80; --okbg: #14321f; --bad: #f87171; --badbg: #3a1717;
+    --tag: #1e2b48; --tagtext: #93c5fd;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1420; --card: #171e2d; --text: #e6eaf2; --muted: #9aa4b5; --line: #2a3447;
+  --accent: #60a5fa; --ok: #4ade80; --okbg: #14321f; --bad: #f87171; --badbg: #3a1717;
+  --tag: #1e2b48; --tagtext: #93c5fd;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; min-height: 100vh; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.5rem; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 12px 0 8px; }
+.sec { margin-top: 28px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.muted { color: var(--muted); }
+.hint { margin: 0 0 12px; font-size: 0.9rem; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.meta { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
+.tag { display: inline-block; font-size: 0.78rem; background: var(--tag); color: var(--tagtext); padding: 3px 10px; border-radius: 999px; }
+.progress { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+.progress > div { height: 100%; background: var(--accent); transition: width .3s; }
+.select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; margin: 6px 0 16px; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; opacity: 1; }
+.opt.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt.good { border-color: var(--ok); background: var(--okbg); }
+.opt.bad { border-color: var(--bad); background: var(--badbg); }
+.mark { width: 1.1em; flex-shrink: 0; }
+.letter { font-weight: 600; flex-shrink: 0; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.feedback { margin-top: 16px; font-weight: 600; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.expl { margin-top: 12px; padding: 14px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.score { font-size: 2.2rem; font-weight: 700; margin: 8px 0; }
+.score span { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.rev { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.rev p { margin: 8px 0; }
+.bad-t { color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"></div>
+</div>
+
+<script id="questions" type="application/json">
+[
+{"t": "Políticas", "q": "Em uma política de identidade, qual elemento do statement define a quais recursos a permissão se aplica?", "o": ["Action", "Resource", "Effect", "Version"], "a": [1], "e": "Resource define os ARNs aos quais as ações do statement se aplicam. Action define as operações, Effect define Allow ou Deny, e Version define a versão da linguagem da política."},
+{"t": "Políticas", "q": "Quando nenhuma política aplicável concede uma ação, qual é o resultado padrão?", "o": ["Allow implícito", "Deny implícito", "Permissão herdada da conta raiz", "Erro de sintaxe na requisição"], "a": [1], "e": "Por padrão, o IAM nega tudo. Sem um Allow aplicável, a requisição é negada implicitamente."},
+{"t": "Políticas", "q": "Um administrador quer reutilizar a mesma política em várias roles e manter o controle de versões. Qual tipo de política usar?", "o": ["Política gerenciada pelo cliente (customer managed)", "Política inline", "Política gerenciada pela AWS", "Política de recurso"], "a": [0], "e": "Políticas gerenciadas pelo cliente podem ser anexadas a várias identidades e têm versionamento. Políticas gerenciadas pela AWS não podem ser editadas."},
+{"t": "Políticas", "q": "Uma permissão deve existir somente para uma role específica e ser removida automaticamente junto com ela. Qual tipo de política usar?", "o": ["Política inline", "Política gerenciada pela AWS", "Service control policy", "Permissions boundary"], "a": [0], "e": "Políticas inline são embutidas em uma única identidade e são excluídas junto com ela."},
+{"t": "Políticas", "q": "Uma política deve permitir o uso de um serviço somente quando a região da requisição for sa-east-1. Qual condition key usar?", "o": ["aws:RequestedRegion", "aws:SourceRegion", "aws:Region", "s3:LocationConstraint"], "a": [0], "e": "aws:RequestedRegion contém a região para a qual a requisição foi feita, e pode ser usada em StringEquals."},
+{"t": "Políticas", "q": "Qual política concede a menor permissão necessária para listar os objetos do bucket dados?", "o": ["s3:* em arn:aws:s3:::dados/*", "s3:ListBucket em arn:aws:s3:::dados", "s3:* em *", "s3:GetObject em arn:aws:s3:::dados"], "a": [1], "e": "ListBucket atua sobre o ARN do bucket, sem o sufixo de objetos. O wildcard em s3:* e o Resource amplo concedem mais do que o necessário."},
+{"t": "Políticas", "q": "Quais elementos são obrigatórios em um statement de uma política IAM? Escolha 2.", "o": ["Effect", "Sid", "Version", "Action"], "a": [0, 3], "e": "Effect e Action (ou NotAction) são obrigatórios. Sid é opcional, e Version fica no nível da política, não é obrigatória no statement."},
+{"t": "Políticas", "q": "Uma política tem Effect Allow e NotAction iam:*. O que ela permite?", "o": ["Todas as ações, exceto as do IAM", "Somente ações do IAM", "Nenhuma ação", "Todas as ações, inclusive as do IAM"], "a": [0], "e": "NotAction aplica o statement a todas as ações exceto as listadas. Por isso é uma forma ampla e deve ser usada com cuidado."},
+{"t": "Políticas", "q": "Um usuário deve passar somente roles cujo nome começa com app-. Como restringir o iam:PassRole?", "o": ["Resource arn:aws:iam::<conta>:role/app-*", "Resource * com iam:*", "Resource * com sts:AssumeRole", "Resource arn:aws:iam::<conta>:role/app com iam:CreateRole"], "a": [0], "e": "iam:PassRole aceita ARNs de role com wildcard no nome, o que limita as roles que podem ser passadas a serviços."},
+{"t": "Políticas", "q": "Qual condition key restringe a listagem de um bucket a um determinado prefixo?", "o": ["s3:prefix", "aws:SourceIp", "s3:ExistingObjectTag", "aws:PrincipalOrgID"], "a": [0], "e": "s3:prefix é usada com s3:ListBucket para limitar quais chaves aparecem na listagem."},
+{"t": "Políticas", "q": "Uma bucket policy deve negar qualquer requisição que não use HTTPS. Qual configuração usar?", "o": ["Deny com Condition aws:SecureTransport igual a false", "Allow com Condition aws:SecureTransport igual a true", "Condition aws:SourceIp", "Política de SCP na organização"], "a": [0], "e": "Um Deny com aws:SecureTransport false bloqueia requisições sem TLS, independentemente das permissões de identidade."},
+{"t": "Políticas", "q": "Qual é o ARN correto em uma política de identidade para ler um objeto específico chamado relatorio.csv no bucket dados?", "o": ["arn:aws:s3:::dados/relatorio.csv", "arn:aws:s3:::dados", "arn:aws:s3:::*", "s3://dados/relatorio.csv"], "a": [0], "e": "Ações em objetos usam o ARN do bucket seguido da chave do objeto. O formato s3:// não é um ARN."},
+{"t": "Roles e STS", "q": "Uma aplicação em EC2 precisa acessar um bucket S3 sem chaves no código. Qual abordagem usar?", "o": ["Instance profile com uma role anexada à instância", "Access key gravada em arquivo na instância", "Usuário IAM compartilhado pela equipe", "Credenciais do usuário root"], "a": [0], "e": "O instance profile fornece credenciais temporárias que são renovadas automaticamente, sem armazenar chaves."},
+{"t": "Roles e STS", "q": "Qual ação do STS obtém credenciais temporárias para assumir uma role?", "o": ["sts:AssumeRole", "sts:GetCallerIdentity", "iam:PassRole", "iam:CreateRole"], "a": [0], "e": "AssumeRole retorna credenciais temporárias para a role. GetCallerIdentity apenas mostra a identidade atual, e PassRole permite associar uma role a um serviço."},
+{"t": "Roles e STS", "q": "Qual documento define quem pode assumir uma role?", "o": ["Trust policy (política de confiança)", "Permissions boundary", "Política inline do usuário", "Tags da role"], "a": [0], "e": "A trust policy é uma política baseada em recurso da role que define os principais confiáveis, como contas, usuários, roles ou serviços."},
+{"t": "Roles e STS", "q": "Um desenvolvedor vai criar uma função Lambda usando uma role existente. Qual permissão ele precisa além de criar a função?", "o": ["iam:PassRole sobre a role", "iam:CreateUser", "sts:GetSessionToken", "iam:AssumeRole do próprio usuário"], "a": [0], "e": "Para associar uma role a um serviço, o criador precisa de iam:PassRole sobre essa role. Não existe iam:AssumeRole como ação de usuário."},
+{"t": "Roles e STS", "q": "Por padrão, por quanto tempo dura uma sessão obtida com AssumeRole?", "o": ["15 minutos", "1 hora", "12 horas", "24 horas"], "a": [1], "e": "A duração padrão é de 1 hora. Ela pode ser ajustada na role até o máximo de 12 horas."},
+{"t": "Roles e STS", "q": "Uma função Lambda deve poder assumir uma role. O que deve constar na trust policy?", "o": ["Principal de serviço lambda.amazonaws.com com sts:AssumeRole", "Política de bucket S3 apontando para a função", "SCP negando a ação", "Access key do usuário root"], "a": [0], "e": "A trust policy precisa autorizar o principal de serviço lambda.amazonaws.com a executar sts:AssumeRole."},
+{"t": "Roles e STS", "q": "Quais afirmações sobre IAM roles são verdadeiras? Escolha 2.", "o": ["Não têm credenciais de longo prazo", "Possuem senha para login no console", "Podem ser assumidas por serviços da AWS", "Podem ser adicionadas a grupos de usuários"], "a": [0, 2], "e": "Roles fornecem credenciais temporárias e podem ser assumidas por usuários, serviços ou contas. Não possuem senha nem são adicionadas a grupos."},
+{"t": "Avaliação de permissões", "q": "Uma política de identidade permite s3:GetObject, mas uma SCP da organização não permite essa ação. Qual é o resultado?", "o": ["Permitido", "Negado", "Permitido apenas na conta de gerenciamento", "Depende da ordem das políticas"], "a": [1], "e": "A SCP define o máximo permitido na conta. Se ela não permite a ação, a identidade não consegue executá-la, mesmo com um Allow."},
+{"t": "Avaliação de permissões", "q": "Uma política de recurso tem um Deny explícito e a política de identidade do usuário tem um Allow para a mesma ação, na mesma conta. Qual é o resultado?", "o": ["Permitido", "Negado", "Permitido se a política de recurso for mais recente", "Erro de validação da política"], "a": [1], "e": "Um Deny explícito em qualquer política aplicável prevalece sobre qualquer Allow."},
+{"t": "Avaliação de permissões", "q": "Para que um principal de outra conta acesse um recurso que aceita políticas baseadas em recurso, o que é necessário?", "o": ["Política de recurso permitindo a conta externa e política de identidade na conta externa permitindo a ação", "Apenas a política de identidade na conta de destino", "Apenas a SCP da conta de origem", "Compartilhar a senha do usuário root da conta de destino"], "a": [0], "e": "No acesso entre contas com política de recurso, ambos os lados precisam autorizar a ação: a política de recurso na conta do recurso e a política de identidade na conta do principal."},
+{"t": "Avaliação de permissões", "q": "Um desenvolvedor recebe AccessDenied ao chamar sts:AssumeRole, e a política dele já permite essa ação. Qual é a causa mais provável?", "o": ["A trust policy da role não inclui o principal do desenvolvedor", "O desenvolvedor não tem access key", "O S3 está desabilitado na conta", "O usuário não possui tags"], "a": [0], "e": "Para AssumeRole funcionar, a permissão precisa existir tanto na identidade quanto na trust policy da role."},
+{"t": "Avaliação de permissões", "q": "Um permissions boundary é anexado a um usuário que tem uma política Allow para s3:*. O que o boundary define?", "o": ["O limite máximo de permissões que o usuário pode receber", "Permissões adicionais concedidas ao usuário", "A trust policy de uma role", "A região padrão de uso do usuário"], "a": [0], "e": "Permissions boundary define o teto de permissões. A permissão efetiva é a interseção entre a política de identidade e o boundary."},
+{"t": "Avaliação de permissões", "q": "Um usuário pertence a um grupo com Deny em ec2:TerminateInstances e tem uma política direta com Allow para essa mesma ação. Qual é o resultado?", "o": ["Negado", "Permitido", "Permitido apenas em horário comercial", "Depende da região da instância"], "a": [0], "e": "Deny explícito prevalece sobre Allow, independentemente de onde a política está anexada."},
+{"t": "Credenciais", "q": "Desenvolvedores acessam a AWS pelo terminal de seus computadores. A empresa quer eliminar access keys de longo prazo. Qual é a melhor solução?", "o": ["IAM Identity Center com credenciais temporárias", "Access keys com validade de 90 dias", "Uma access key compartilhada pela equipe", "Usar o usuário root para as operações de CLI"], "a": [0], "e": "O IAM Identity Center fornece credenciais temporárias por sessão, eliminando chaves de longo prazo."},
+{"t": "Credenciais", "q": "Um usuário IAM tem uma access key que precisa ser substituída. Qual é a sequência recomendada?", "o": ["Criar a nova chave, atualizar as aplicações, desativar a antiga e depois excluí-la", "Excluir a antiga antes de criar a nova", "Manter as duas chaves ativas indefinidamente", "Compartilhar a nova chave com a equipe e trocar a senha do console"], "a": [0], "e": "Essa sequência evita indisponibilidade. Desativar antes de excluir permite reverter caso alguma aplicação ainda use a chave antiga."},
+{"t": "Credenciais", "q": "Uma aplicação on-premises precisa acessar a AWS sem usar access keys de longo prazo. Qual recurso usar?", "o": ["IAM Roles Anywhere com certificados ou federação SAML/OIDC", "Armazenar a chave em um repositório privado", "Usar a senha do root no script", "Criar um usuário IAM por servidor com chave permanente"], "a": [0], "e": "IAM Roles Anywhere e a federação emitem credenciais temporárias para cargas fora da AWS, sem chaves permanentes."},
+{"t": "Credenciais", "q": "Qual relatório lista o status de todas as credenciais da conta, como senha, MFA e access keys, incluindo a data do último uso das chaves?", "o": ["Credential report", "Access Advisor", "IAM Access Analyzer", "Cost and usage report"], "a": [0], "e": "O credential report é gerado no nível da conta e lista o estado de todas as credenciais de usuários IAM."},
+{"t": "Credenciais", "q": "Um pipeline de CI precisa acessar a AWS. Qual abordagem é mais segura?", "o": ["Assumir uma role por OIDC a partir do provedor do CI", "Colocar a access key como variável pública no repositório", "Usar a senha do usuário root", "Dar AdministratorAccess ao usuário do pipeline"], "a": [0], "e": "A federação OIDC permite que o pipeline assuma uma role com credenciais temporárias, sem armazenar chaves."},
+{"t": "MFA e conta root", "q": "Como exigir MFA para executar ações sensíveis em uma política IAM?", "o": ["Condition aws:MultiFactorAuthPresent igual a true", "Condition aws:SourceIp", "Condition aws:RequestedRegion", "Condition s3:prefix"], "a": [0], "e": "aws:MultiFactorAuthPresent indica se a sessão foi autenticada com MFA."},
+{"t": "MFA e conta root", "q": "Qual é a prática recomendada para a conta root?", "o": ["Habilitar MFA e não criar access keys", "Criar access keys para automação", "Compartilhar a senha com a equipe", "Usar a conta root no dia a dia"], "a": [0], "e": "A conta root deve ter MFA habilitado e, em regra, não deve ter access keys. Tarefas do dia a dia devem usar identidades individuais."},
+{"t": "MFA e conta root", "q": "Quais práticas são recomendadas para o usuário root? Escolha 2.", "o": ["Habilitar MFA", "Usar apenas em tarefas que exigem o root", "Criar access keys para scripts", "Compartilhar as credenciais com a equipe"], "a": [0, 1], "e": "O root deve ter MFA e ser usado apenas em tarefas que exigem essa identidade. Access keys e compartilhamento aumentam o risco."},
+{"t": "MFA e conta root", "q": "Uma política deve aceitar a ação somente se a autenticação MFA tiver sido feita há menos de 1 hora. Qual condition key usar?", "o": ["aws:MultiFactorAuthAge", "aws:TokenIssueTime", "aws:SecureTransport", "aws:CurrentTime"], "a": [0], "e": "aws:MultiFactorAuthAge indica quantos segundos se passaram desde a autenticação MFA da sessão."},
+{"t": "Organizations e SCPs", "q": "Uma SCP permite somente ações nas regiões us-east-1 e sa-east-1. Ela concede alguma permissão?", "o": ["Não, SCPs apenas limitam o máximo permitido", "Sim, concede permissões a todas as contas", "Sim, mas somente para o usuário root", "Depende da política de identidade do usuário"], "a": [0], "e": "SCPs não concedem permissões. Elas definem o limite máximo, e a identidade ainda precisa de uma política Allow."},
+{"t": "Organizations e SCPs", "q": "Qual SCP impede que contas membros desativem o registro do CloudTrail?", "o": ["Deny para cloudtrail:StopLogging", "Allow para cloudtrail:*", "Permissions boundary em cada role", "Tag de proteção na conta"], "a": [0], "e": "Uma SCP com Deny sobre cloudtrail:StopLogging se aplica às identidades das contas membros, inclusive ao root delas."},
+{"t": "Organizations e SCPs", "q": "Qual conta não é afetada pelas SCPs da organização?", "o": ["Conta de gerenciamento (management account)", "Qualquer conta membro", "Contas suspensas", "Contas criadas recentemente"], "a": [0], "e": "As SCPs não restringem a conta de gerenciamento da organização."},
+{"t": "Organizations e SCPs", "q": "Sobre service control policies (SCPs), quais afirmações são verdadeiras? Escolha 2.", "o": ["Aplicam-se a usuários e roles das contas membros", "Concedem permissões por si só", "Não afetam o usuário root da conta membro", "Podem ser anexadas à raiz, a OUs ou a contas"], "a": [0, 3], "e": "SCPs restringem identidades das contas membros e podem ser anexadas à raiz, a OUs ou a contas. Elas não concedem permissões e afetam também o root das contas membros."},
+{"t": "Usuários e grupos", "q": "Vinte desenvolvedores precisam das mesmas permissões. Qual é a prática recomendada?", "o": ["Anexar a política a um grupo e adicionar os usuários ao grupo", "Anexar a política a cada usuário individualmente", "Compartilhar um único usuário entre os desenvolvedores", "Usar a conta root"], "a": [0], "e": "Grupos centralizam as permissões e facilitam a manutenção quando alguém entra ou sai da equipe."},
+{"t": "Usuários e grupos", "q": "Quantos grupos IAM um mesmo usuário pode integrar, por padrão?", "o": ["Até 10", "Até 5", "Ilimitado", "Apenas 1"], "a": [0], "e": "O limite padrão é de 10 grupos por usuário IAM."},
+{"t": "Usuários e grupos", "q": "Um usuário precisa acessar o console da AWS com usuário e senha. O que deve ser configurado?", "o": ["Senha de console, com MFA recomendado", "Apenas uma access key", "Somente acesso via SSO", "Não é possível usar senha com usuários IAM"], "a": [0], "e": "Usuários IAM podem ter senha de console. A configuração de MFA é recomendada para proteger esse acesso."},
+{"t": "Usuários e grupos", "q": "Qual tipo de política é anexada a um recurso, como um bucket S3, e não a uma identidade?", "o": ["Política baseada em recurso", "Política de identidade", "Permissions boundary", "Service control policy"], "a": [0], "e": "Políticas baseadas em recurso definem quem pode acessar o recurso, e podem conceder acesso a principais de outras contas."},
+{"t": "Ferramentas de análise", "q": "Uma equipe quer identificar quais serviços um usuário acessou recentemente, para remover permissões que não usa. Qual ferramenta usar?", "o": ["Access Advisor", "Credential report", "IAM Access Analyzer", "Trusted Advisor"], "a": [0], "e": "O Access Advisor mostra os serviços acessados e quando, a partir das informações de último acesso."},
+{"t": "Ferramentas de análise", "q": "Uma equipe precisa identificar recursos que são compartilhados com contas ou principais externos. Qual ferramenta usar?", "o": ["IAM Access Analyzer", "Access Advisor", "Credential report", "CloudTrail Insights"], "a": [0], "e": "O IAM Access Analyzer analisa políticas de recursos e identifica compartilhamentos com entidades externas à zona de confiança."},
+{"t": "Ferramentas de análise", "q": "Uma equipe quer gerar uma política de permissões a partir do uso real registrado no CloudTrail. Qual recurso usar?", "o": ["Geração de política do IAM Access Analyzer", "Credential report", "Service control policy", "Permissions boundary"], "a": [0], "e": "O IAM Access Analyzer consegue gerar políticas baseadas na atividade registrada no CloudTrail, como ponto de partida para o menor privilégio."},
+{"t": "Ferramentas de análise", "q": "Qual serviço registra as chamadas de API feitas por usuários e roles IAM para fins de auditoria?", "o": ["AWS CloudTrail", "AWS Config", "Amazon Inspector", "AWS Budgets"], "a": [0], "e": "O CloudTrail registra as chamadas de API, incluindo quem fez a chamada, quando e de onde."},
+{"t": "Federação e Identity Center", "q": "Uma empresa quer que colaboradores acessem várias contas AWS com o login corporativo e permissões centralizadas. Qual serviço usar?", "o": ["IAM Identity Center", "Criar usuários IAM em cada conta", "Compartilhar a conta root", "Cognito user pool"], "a": [0], "e": "O IAM Identity Center centraliza o acesso a várias contas e integra com diretórios corporativos, usando credenciais temporárias."},
+{"t": "Federação e Identity Center", "q": "Qual padrão é usado para federar um provedor de identidade corporativo, como o Active Directory FS, com o IAM?", "o": ["SAML 2.0", "OAuth 1.0", "LDAP direto na AWS", "Kerberos"], "a": [0], "e": "A federação SAML 2.0 permite que o IAM confie no provedor corporativo e emita credenciais temporárias via AssumeRoleWithSAML."},
+{"t": "Federação e Identity Center", "q": "Quais mecanismos concedem credenciais temporárias? Escolha 2.", "o": ["AssumeRole", "CreateAccessKey", "GetSessionToken", "CreateLoginProfile"], "a": [0, 2], "e": "AssumeRole e GetSessionToken retornam credenciais temporárias. CreateAccessKey gera chaves de longo prazo, e CreateLoginProfile define senha de console."},
+{"t": "Ferramentas de análise", "q": "Uma equipe quer identificar access keys que não são usadas há mais de 90 dias. Qual relatório usar?", "o": ["Credential report", "Access Advisor", "IAM Access Analyzer", "Service control policy"], "a": [0], "e": "O credential report inclui a data do último uso de cada access key, o que permite localizar chaves inativas para desativação."}
+]
+</script>
+
+<script>
+const Q = JSON.parse(document.getElementById('questions').textContent);
+const app = document.getElementById('app');
+const LETTERS = 'ABCDE';
+let S = null;
+let timer = null;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shuffle = arr => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+const sameAnswer = (sel, correct) => [...sel].sort().join() === [...correct].sort().join();
+
+function startQuiz(topic) {
+  S = { topic, list: shuffle(Q.filter(q => topic === 'all' || q.t === topic)), i: 0, score: 0, wrong: [], sel: new Set(), confirmed: false, lastOk: false, t0: Date.now() };
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const el = document.getElementById('timer');
+    if (S && el) el.textContent = fmt(Math.floor((Date.now() - S.t0) / 1000));
+  }, 1000);
+  render();
+}
+
+function pick(i) {
+  if (S.confirmed) return;
+  if (S.list[S.i].a.length > 1) {
+    S.sel.has(i) ? S.sel.delete(i) : S.sel.add(i);
+  } else {
+    S.sel = new Set([i]);
+  }
+  render();
+}
+
+function confirm() {
+  if (!S.sel.size || S.confirmed) return;
+  const q = S.list[S.i];
+  S.lastOk = sameAnswer(S.sel, q.a);
+  if (S.lastOk) S.score++;
+  else S.wrong.push({ q, chosen: [...S.sel].sort() });
+  S.confirmed = true;
+  render();
+}
+
+function next() {
+  S.i++;
+  S.sel = new Set();
+  S.confirmed = false;
+  render();
+}
+
+function render() {
+  if (!S) return renderStart();
+  if (S.i >= S.list.length) return renderResult();
+  renderQuestion();
+}
+
+function renderStart() {
+  clearInterval(timer);
+  const topics = [...new Set(Q.map(q => q.t))].sort();
+  app.innerHTML = `
+    <div class="card">
+      <h1>Simulado IAM (DVA-C02)</h1>
+      <p class="muted">${Q.length} questões de escolha única e múltipla resposta, com explicação após cada resposta. Não é a escala oficial da AWS: use para identificar lacunas de estudo.</p>
+      <label class="muted" for="topic">Tema</label>
+      <select id="topic" class="select">
+        <option value="all">Todos os temas (${Q.length})</option>
+        ${topics.map(t => `<option value="${esc(t)}">${esc(t)} (${Q.filter(q => q.t === t).length})</option>`).join('')}
+      </select>
+      <div class="actions"><button class="btn primary" data-action="start">Começar</button></div>
+    </div>`;
+}
+
+function renderQuestion() {
+  const q = S.list[S.i];
+  const n = S.list.length;
+  const multi = q.a.length > 1;
+  const opts = q.o.map((txt, i) => {
+    const picked = S.sel.has(i);
+    let cls = 'opt' + (picked ? ' sel' : '');
+    if (S.confirmed) {
+      if (q.a.includes(i)) cls += ' good';
+      else if (picked) cls += ' bad';
+    }
+    const mark = multi ? (picked ? '☑' : '☐') : (picked ? '◉' : '○');
+    return `<button class="${cls}" data-action="pick" data-i="${i}" ${S.confirmed ? 'disabled' : ''}>
+      <span class="mark">${mark}</span><span class="letter">${LETTERS[i]}</span><span>${esc(txt)}</span>
+    </button>`;
+  }).join('');
+
+  let footer;
+  if (!S.confirmed) {
+    footer = `<div class="actions"><button class="btn primary" data-action="confirm" ${S.sel.size ? '' : 'disabled'}>Confirmar resposta</button></div>`;
+  } else {
+    footer = `
+      <div class="feedback ${S.lastOk ? 'ok' : 'bad'}">${S.lastOk ? 'Resposta correta!' : 'Resposta incorreta. Correta: ' + q.a.map(i => LETTERS[i]).join(', ')}</div>
+      <div class="expl"><strong>Explicação:</strong> ${esc(q.e)}</div>
+      <div class="actions"><button class="btn primary" data-action="next">${S.i + 1 < n ? 'Próxima' : 'Ver resultado'}</button></div>`;
+  }
+
+  app.innerHTML = `
+    <div class="progress"><div style="width:${(S.i / n) * 100}%"></div></div>
+    <div class="card">
+      <div class="row meta"><span>Questão ${S.i + 1} de ${n}</span><span id="timer">${fmt(Math.floor((Date.now() - S.t0) / 1000))}</span></div>
+      <span class="tag">${esc(q.t)}</span>
+      <h2>${esc(q.q)}</h2>
+      <p class="muted hint">${multi ? `Escolha ${q.a.length} alternativas.` : 'Escolha uma alternativa.'}</p>
+      <div class="opts">${opts}</div>
+      ${footer}
+    </div>`;
+}
+
+function renderResult() {
+  clearInterval(timer);
+  const n = S.list.length;
+  const pct = Math.round((S.score / n) * 100);
+  const secs = Math.floor((Date.now() - S.t0) / 1000);
+  const topicLabel = S.topic === 'all' ? 'todos os temas' : S.topic;
+  const review = S.wrong.length
+    ? S.wrong.map(w => `
+      <div class="rev">
+        <span class="tag">${esc(w.q.t)}</span>
+        <p><strong>${esc(w.q.q)}</strong></p>
+        <p class="bad-t">Sua resposta: ${w.chosen.map(i => LETTERS[i]).join(', ')} · Correta: ${w.q.a.map(i => LETTERS[i]).join(', ')}</p>
+        <p class="muted">${esc(w.q.e)}</p>
+      </div>`).join('')
+    : '<p>Nenhum erro. Excelente!</p>';
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>Resultado</h1>
+      <div class="score">${S.score}/${n} <span>(${pct}%)</span></div>
+      <p class="muted">Tempo: ${fmt(secs)}. Use o resultado para identificar os temas que precisam de revisão.</p>
+      <div class="actions">
+        <button class="btn primary" data-action="restart">Refazer (${esc(topicLabel)})</button>
+        <button class="btn" data-action="home">Trocar tema</button>
+      </div>
+    </div>
+    <h2 class="sec">Revisão dos erros (${S.wrong.length})</h2>
+    ${review}`;
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]');
+  if (!b || b.disabled) return;
+  const action = b.dataset.action;
+  if (action === 'start') startQuiz(document.getElementById('topic').value);
+  else if (action === 'pick') pick(Number(b.dataset.i));
+  else if (action === 'confirm') confirm();
+  else if (action === 'next') next();
+  else if (action === 'restart') startQuiz(S.topic);
+  else if (action === 'home') { S = null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
