@@ -8,7 +8,7 @@ Material de estudo para a certificação **AWS Certified Developer – Associate
 - [Simulados](simulados/) — provas de treino por tema:
   - **IAM**
     - [Simulado IAM (v1)](https://htmlpreview.github.io/?https://github.com/marcusWittho/simulado-dva-c02/blob/main/simulados/01-IAM/simulado-iam-v1.html)
-    - [Simulado IAM difícil (v2)](https://htmlpreview.github.io/?https://github.com/marcusWittho/simulado-dva-c02/blob/main/simulados/01-IAM/simulado-iam-v2.html)
+    - [Simulado IAM (v2)](https://htmlpreview.github.io/?https://github.com/marcusWittho/simulado-dva-c02/blob/main/simulados/01-IAM/simulado-iam-v2.html)
 
 ## Como usar
 
